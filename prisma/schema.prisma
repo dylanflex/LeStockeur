@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Product {
+  id                String              @id @default(cuid())
+  code              String              @unique
+  name              String
+  description       String?
+  category          String?
+  unitPrice         Float               @default(0)
+  minimumStock      Int                 @default(0)
+  currentStock      Int                 @default(0)
+  location          String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  userId            String?
+  user              User?               @relation(fields: [userId], references: [id])
+  stockMovements    StockMovement[]
+  inventoryAudits   InventoryAudit[]
+}
+
+model StockMovement {
+  id                String              @id @default(cuid())
+  type              String              // Values: PURCHASE, PRODUCTION, SALE, INTERNAL_USE, ADJUSTMENT, RETURN, WASTE
+  quantity          Int
+  reason            String?
+  notes             String?
+  date              DateTime            @default(now())
+  productId         String
+  product           Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId            String?
+  createdAt         DateTime            @default(now())
+}
+
+model InventoryAudit {
+  id                String              @id @default(cuid())
+  date              DateTime            @default(now())
+  theoreticalStock  Int
+  actualStock       Int
+  difference        Int
+  notes             String?
+  productId         String
+  product           Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId            String?
+  createdAt         DateTime            @default(now())
+}
+
+model User {
+  id                String              @id @default(cuid())
+  name              String
+  email             String              @unique
+  role              String              @default("USER")  // Values: ADMIN, MANAGER, USER
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  products          Product[]
+}
