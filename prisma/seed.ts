@@ -105,7 +105,7 @@ async function main() {
   // Create stock movements
   await prisma.stockMovement.create({
     data: {
-      type: MovementType.PURCHASE,
+      type: MovementType.ACHAT,
       quantity: 15,
       reason: 'Achat',
       notes: 'Commande #ORD-2025-042',
@@ -117,7 +117,7 @@ async function main() {
   
   await prisma.stockMovement.create({
     data: {
-      type: MovementType.SALE,
+      type: MovementType.VENTE,
       quantity: 5,
       reason: 'Vente',
       notes: 'Facture #INV-2025-128',
@@ -153,7 +153,7 @@ async function main() {
   
   await prisma.stockMovement.create({
     data: {
-      type: MovementType.ADJUSTMENT,
+      type: MovementType.AJUSTEMENT,
       quantity: -2,
       reason: 'Inventaire',
       notes: 'Ajustement après inventaire mensuel',

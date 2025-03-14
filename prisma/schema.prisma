@@ -25,12 +25,12 @@ model Product {
   userId            String?
   user              User?               @relation(fields: [userId], references: [id])
   stockMovements    StockMovement[]
-  inventoryAudits   InventoryAudit[]
+  auditItems        InventoryAuditItem[]
 }
 
 model StockMovement {
   id                String              @id @default(cuid())
-  type              String              // Values: PURCHASE, PRODUCTION, SALE, INTERNAL_USE, ADJUSTMENT, RETURN, WASTE
+  type              String              // Values: ACHAT, PRODUCTION, VENTE, UTILISATION_INTERNE, AJUSTEMENT, RETOUR, PERTE
   quantity          Int
   reason            String?
   notes             String?
@@ -44,13 +44,38 @@ model StockMovement {
 model InventoryAudit {
   id                String              @id @default(cuid())
   date              DateTime            @default(now())
+  status            String              // Values: PENDING, APPROVED, REJECTED
+  notes             String?
+  userId            String?
+  reviewerId        String?
+  items             InventoryAuditItem[]
+  user              User?               @relation("AuditCreator", fields: [userId], references: [id])
+  reviewer          User?               @relation("AuditReviewer", fields: [reviewerId], references: [id])
+  history           InventoryAuditHistory[]
+  createdAt         DateTime            @default(now())
+}
+
+model InventoryAuditItem {
+  id                String              @id @default(cuid())
   theoreticalStock  Int
   actualStock       Int
   difference        Int
   notes             String?
   productId         String
+  auditId           String
   product           Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  audit             InventoryAudit      @relation(fields: [auditId], references: [id], onDelete: Cascade)
+}
+
+model InventoryAuditHistory {
+  id                String              @id @default(cuid())
+  auditId           String
+  action            String              // Values: CREATED, APPROVED, REJECTED, ITEM_ADDED, ITEM_UPDATED, ITEM_REMOVED
+  oldValue          String?
+  newValue          String?
   userId            String?
+  audit             InventoryAudit      @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  user              User?               @relation(fields: [userId], references: [id])
   createdAt         DateTime            @default(now())
 }
 
@@ -58,8 +83,11 @@ model User {
   id                String              @id @default(cuid())
   name              String
   email             String              @unique
-  role              String              @default("USER")  // Values: ADMIN, MANAGER, USER
+  role              String              @default("USER") // Values: ADMIN, USER
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   products          Product[]
+  createdAudits     InventoryAudit[]    @relation("AuditCreator")
+  reviewedAudits    InventoryAudit[]    @relation("AuditReviewer")
+  auditHistory      InventoryAuditHistory[]
 }

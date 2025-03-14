@@ -47,28 +47,35 @@ export function getStockStatus(currentStock: number, minimumStock: number) {
 }
 
 export function getMovementTypeLabel(type: string) {
-  const types: Record<string, string> = {
-    PURCHASE: 'Achat',
-    PRODUCTION: 'Production',
-    SALE: 'Vente',
-    INTERNAL_USE: 'Usage interne',
-    ADJUSTMENT: 'Ajustement',
-    RETURN: 'Retour',
-    WASTE: 'Mise au rebut',
-  };
-  
-  return types[type] || type;
+  switch (type) {
+    case "ACHAT":
+      return "Achat";
+    case "PRODUCTION":
+      return "Production";
+    case "VENTE":
+      return "Vente";
+    case "UTILISATION_INTERNE":
+      return "Utilisation interne";
+    case "AJUSTEMENT":
+      return "Ajustement";
+    case "RETOUR":
+      return "Retour";
+    case "PERTE":
+      return "Mise au rebut";
+    default:
+      return type;
+  }
 }
 
 export function getMovementTypeColor(type: string) {
   const colors: Record<string, string> = {
-    PURCHASE: 'green',
+    ACHAT: 'green',
     PRODUCTION: 'green',
-    SALE: 'red',
-    INTERNAL_USE: 'red',
-    ADJUSTMENT: 'amber',
-    RETURN: 'green',
-    WASTE: 'red',
+    VENTE: 'red',
+    UTILISATION_INTERNE: 'red',
+    AJUSTEMENT: 'amber',
+    RETOUR: 'green',
+    PERTE: 'red',
   };
   
   return colors[type] || 'muted';

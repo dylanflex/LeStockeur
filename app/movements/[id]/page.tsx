@@ -101,7 +101,7 @@ export default function MovementDetailPage({ params }: { params: { id: string } 
     return (
       <Shell>
         <div className="flex items-center justify-center p-8">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Chargement...</p>
         </div>
       </Shell>
     );

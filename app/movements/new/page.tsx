@@ -119,16 +119,16 @@ export default function NewMovementPage() {
     if (movementType === "in") {
       switch (reason) {
         case "purchase":
-          type = "PURCHASE";
+          type = "ACHAT";
           break;
         case "production":
           type = "PRODUCTION";
           break;
         case "return":
-          type = "RETURN";
+          type = "RETOUR";
           break;
         case "adjustment":
-          type = "ADJUSTMENT";
+          type = "AJUSTEMENT";
           break;
         default:
           throw new Error("Invalid movement type");
@@ -136,16 +136,16 @@ export default function NewMovementPage() {
     } else {
       switch (reason) {
         case "sale":
-          type = "SALE";
+          type = "VENTE";
           break;
         case "internal":
-          type = "INTERNAL_USE";
+          type = "UTILISATION_INTERNE";
           break;
         case "waste":
-          type = "WASTE";
+          type = "PERTE";
           break;
         case "adjustment":
-          type = "ADJUSTMENT";
+          type = "AJUSTEMENT";
           break;
         default:
           throw new Error("Invalid movement type");

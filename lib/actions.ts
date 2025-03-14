@@ -164,14 +164,14 @@ export async function createStockMovement(data: {
       // Calculate the new stock level
       let newStock = product.currentStock;
       
-      if (type === "PURCHASE" || type === "PRODUCTION" || type === "RETURN") {
+      if (type === "ACHAT" || type === "PRODUCTION" || type === "RETOUR") {
         newStock += quantity;
-      } else if (type === "SALE" || type === "INTERNAL_USE" || type === "WASTE") {
+      } else if (type === "VENTE" || type === "UTILISATION_INTERNE" || type === "PERTE") {
         if (product.currentStock < quantity) {
           throw new Error("Insufficient stock");
         }
         newStock -= quantity;
-      } else if (type === "ADJUSTMENT") {
+      } else if (type === "AJUSTEMENT") {
         // For adjustments, the quantity can be positive or negative
         newStock += quantity;
         if (newStock < 0) {

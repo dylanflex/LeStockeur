@@ -41,10 +41,24 @@ export default function AuditsPage() {
     const fetchAudits = async () => {
       try {
         const response = await fetch('/api/audits');
-        const data = await response.json();
-        setAudits(data);
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          const formattedAudits = result.data.map((audit: any) => ({
+            id: audit.id,
+            date: new Date(audit.date).toLocaleDateString(),
+            type: audit.status || 'N/A',
+            productsChecked: audit.items?.length || 0,
+            discrepancies: audit.items?.filter((item: any) => item.difference !== 0).length || 0,
+            status: audit.status?.toLowerCase() || 'planned'
+          }));
+          setAudits(formattedAudits);
+        } else {
+          console.error('Invalid response format:', result);
+          setAudits([]);
+        }
       } catch (error) {
         console.error('Error fetching audits:', error);
+        setAudits([]);
       } finally {
         setIsLoading(false);
       }

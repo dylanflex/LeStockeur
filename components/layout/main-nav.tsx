@@ -44,11 +44,6 @@ const mainNavItems = [
     icon: BarChart3,
   },
   {
-    title: "Utilisateurs",
-    href: "/users",
-    icon: Users,
-  },
-  {
     title: "Paramètres",
     href: "/settings",
     icon: Settings,

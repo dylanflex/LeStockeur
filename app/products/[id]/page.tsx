@@ -289,7 +289,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   <div>
                     <dt className="text-sm font-medium text-muted-foreground">Date de création</dt>
                     <dd className="text-sm">
-                      {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "N/A"}
+                      {product.createdAt ? new Date(product.createdAt).toLocaleDateString('fr-FR') : "N/A"}
                     </dd>
                   </div>
                 </dl>
@@ -402,7 +402,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   {stockMovements.map((movement) => (
                     <TableRow key={movement.id}>
                       <TableCell>
-                        {new Date(movement.date).toLocaleDateString()}
+                        {new Date(movement.date).toLocaleDateString('fr-FR')}
                       </TableCell>
                       <TableCell>
                         {movement.type === "PURCHASE" && (

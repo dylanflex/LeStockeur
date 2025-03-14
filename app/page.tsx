@@ -14,7 +14,7 @@ export default function Home() {
                   Gestion d'inventaire simplifiée
                 </div>
                 <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-                  StockMaster
+                Magasinkat
                 </h1>
                 <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
                   La solution complète pour gérer votre inventaire, suivre les mouvements de stock et optimiser votre chaîne d'approvisionnement.
