@@ -22,7 +22,6 @@ export async function GET() {
       where: { id: session.userId },
     });
 
-    console.log('Database user:', JSON.stringify(user, null, 2));
 
     if (!user) {
       console.log('User not found in database for ID:', session.userId);
@@ -32,7 +31,6 @@ export async function GET() {
       );
     }
 
-    console.log('Searching for products with userId:', user.id);
     const products = await prisma.product.findMany({
       where: { userId: user.id },
       select: {
@@ -47,7 +45,6 @@ export async function GET() {
         location: true
       }
     });
-    console.log('Found products:', JSON.stringify(products, null, 2));
 
     // Validate the products data structure
     const validatedProducts = products.map(product => ({

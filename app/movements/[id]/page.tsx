@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Shell } from "@/components/layout/shell";
@@ -39,11 +39,12 @@ export default function MovementDetailPage({ params }: { params: { id: string } 
   const [isDeleting, setIsDeleting] = useState(false);
   const [movement, setMovement] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const movementId = use(params).id;
   
   useEffect(() => {
     const fetchMovementData = async () => {
       try {
-        const response = await fetch(`/api/stock-movements/${params.id}`);
+        const response = await fetch(`/api/stock-movements/${movementId}`);
         const data = await response.json();
         
         if (!response.ok) {
@@ -64,13 +65,13 @@ export default function MovementDetailPage({ params }: { params: { id: string } 
     };
     
     fetchMovementData();
-  }, [params.id, toast]);
+  }, [movementId, toast]);
   
   const handleDelete = async () => {
     setIsDeleting(true);
     
     try {
-      const response = await fetch(`/api/stock-movements/${params.id}`, {
+      const response = await fetch(`/api/stock-movements/${movementId}`, {
         method: 'DELETE',
       });
       

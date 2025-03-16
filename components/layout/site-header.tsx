@@ -15,7 +15,7 @@ export function SiteHeader() {
           <Link href="/" className="hidden items-center space-x-2 md:flex">
             <PackageOpen className="h-6 w-6" />
             <span className="hidden font-bold sm:inline-block">
-              StockMaster
+            Magasinkat
             </span>
           </Link>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Shell } from "@/components/layout/shell";
@@ -26,12 +26,36 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function NewProductPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { userId, getToken } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/settings/categories');
+        const data = await response.json();
+        setCategories(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les catégories",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCategories();
+  }, [toast]);
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,6 +117,28 @@ export default function NewProductPage() {
     }
   };
   
+  if (isLoading) {
+    return (
+      <Shell>
+        <div>Chargement des catégories...</div>
+      </Shell>
+    );
+  }
+  
+  if (categories.length === 0) {
+    return (
+      <Shell>
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold">Aucune catégorie disponible</h2>
+          <p>Vous devez créer au moins une catégorie avant d'ajouter un produit.</p>
+          <Button asChild>
+            <Link href="/settings">Gérer les catégories</Link>
+          </Button>
+        </div>
+      </Shell>
+    );
+  }
+  
   return (
     <Shell>
       <PageHeader heading="Ajouter un produit" text="Créer un nouveau produit dans votre catalogue">
@@ -135,17 +181,16 @@ export default function NewProductPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="category">Catégorie</Label>
-                <Select name="category">
+                <Select name="category" required>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Sélectionner une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="screens">Écrans</SelectItem>
-                    <SelectItem value="peripherals">Périphériques</SelectItem>
-                    <SelectItem value="cables">Câbles</SelectItem>
-                    <SelectItem value="adapters">Adaptateurs</SelectItem>
-                    <SelectItem value="storage">Stockage</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -202,19 +247,10 @@ export default function NewProductPage() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end space-x-2">
-            <Button variant="outline" type="button" onClick={() => router.back()}>
-              Annuler
-            </Button>
+          <CardFooter>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>Enregistrement...</>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Enregistrer
-                </>
-              )}
+              <Save className="mr-2 h-4 w-4" />
+              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </CardFooter>
         </Card>

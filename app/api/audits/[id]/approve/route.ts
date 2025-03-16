@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server"; // ✅ Correction ici
 
-export async function POST(request: Request, context: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth(); // ✅ Correction ici
     if (!userId) {
@@ -13,7 +13,7 @@ export async function POST(request: Request, context: { params: { id: string } }
     }
 
     const { reviewNotes } = await request.json();
-    const auditId = context.params.id;
+    const { id: auditId } = await context.params;
 
     // Vérification que le reviewer existe
     const reviewer = await prisma.user.findUnique({ where: { id: userId } });
