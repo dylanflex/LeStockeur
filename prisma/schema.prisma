@@ -55,6 +55,8 @@ model InventoryAudit {
   reviewer          User?               @relation("AuditReviewer", fields: [reviewerId], references: [id])
   history           InventoryAuditHistory[]
   createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
 }
 
 model InventoryAuditItem {
@@ -79,6 +81,8 @@ model InventoryAuditHistory {
   audit             InventoryAudit      @relation(fields: [auditId], references: [id], onDelete: Cascade)
   user              User?               @relation(fields: [userId], references: [id])
   createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
 }
 
 model User {

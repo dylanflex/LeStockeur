@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { auth } from '@clerk/nextjs/server';
+import { getAuth } from "@clerk/nextjs/server";
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: { id: string } }) {
   try {
-    const session = await auth();
-    if (!session || !session.userId) {
+    const { userId } = getAuth(request);
+    if (!userId) {
       return NextResponse.json(
         { error: "Authentication failed - Please sign in with a valid account" },
         { status: 401 }
@@ -13,62 +13,47 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     const { reviewNotes } = await request.json();
-    const auditId = params.id;
+    const auditId = context.params.id; // Correction ici
 
-    // Verify reviewer exists
-    const reviewer = await prisma.user.findUnique({
-      where: { id: session.userId }
-    });
-
+    // Vérification que le reviewer existe
+    const reviewer = await prisma.user.findUnique({ where: { id: userId } });
     if (!reviewer) {
-      return NextResponse.json(
-        { error: "Reviewer not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Reviewer not found" }, { status: 404 });
     }
 
-    // Update audit status and create history in a transaction
+    // Mise à jour de l'audit dans une transaction
     const audit = await prisma.$transaction(async (prisma) => {
-      // Update the audit status
+      // Mise à jour de l'audit
       const updatedAudit = await prisma.inventoryAudit.update({
         where: { id: auditId },
         data: {
-          status: 'APPROVED',
-          reviewer: {
-            connect: { id: session.userId }
-          },
+          status: "APPROVED",
+          reviewer: { connect: { id: userId } },
           notes: reviewNotes || "",
-          updatedAt: new Date()
         },
         include: {
-          items: {
-            include: {
-              product: true
-            }
-          },
+          items: { include: { product: true } },
           user: true,
           reviewer: true
         }
       });
 
-      // Create audit history entry for status change
+      // Historique de la mise à jour
       await prisma.inventoryAuditHistory.create({
         data: {
           auditId,
           action: "STATUS_CHANGED",
           oldValue: "PENDING",
           newValue: "APPROVED",
-          userId: session.userId
+          userId
         }
       });
 
-      // Update product stock levels based on audit findings
+      // Mise à jour des stocks
       await Promise.all(updatedAudit.items.map(item =>
         prisma.product.update({
           where: { id: item.productId },
-          data: {
-            currentStock: item.actualStock
-          }
+          data: { currentStock: item.actualStock }
         })
       ));
 
