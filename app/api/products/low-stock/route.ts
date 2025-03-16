@@ -18,9 +18,7 @@ export async function GET() {
               { minimumStock: { gt: 0 } },
               {
                 currentStock: {
-                  lt: {
-                    minimumStock: true
-                  }
+                  lt: "minimumStock"
                 }
               }
             ]

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { auth } from '@clerk/nextjs/server';
+import { auth } from "@clerk/nextjs/server";
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: { id: string } }) {
   try {
-    const session = await auth();
-    if (!session || !session.userId) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { error: "Authentication failed - Please sign in with a valid account" },
         { status: 401 }
@@ -13,53 +13,55 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     const { reviewNotes } = await request.json();
-    const auditId = params.id;
+    const auditId = context.params.id;
 
     // Verify reviewer exists
-    const reviewer = await prisma.user.findUnique({
-      where: { id: session.userId }
+    const reviewer = await prisma.user.findUnique({ where: { id: userId } });
+    if (!reviewer) {
+      return NextResponse.json({ error: "Reviewer not found" }, { status: 404 });
+    }
+
+    // Verify audit exists and is in PENDING status
+    const existingAudit = await prisma.inventoryAudit.findUnique({
+      where: { id: auditId }
     });
 
-    if (!reviewer) {
+    if (!existingAudit) {
+      return NextResponse.json({ error: "Audit not found" }, { status: 404 });
+    }
+
+    if (existingAudit.status !== "PENDING") {
       return NextResponse.json(
-        { error: "Reviewer not found" },
-        { status: 404 }
+        { error: "Only pending audits can be rejected" },
+        { status: 400 }
       );
     }
 
-    // Update audit status and create history in a transaction
     const audit = await prisma.$transaction(async (prisma) => {
       // Update the audit status
       const updatedAudit = await prisma.inventoryAudit.update({
         where: { id: auditId },
         data: {
-          status: 'REJECTED',
-          reviewer: {
-            connect: { id: reviewerId }
-          },
-          notes: reviewNotes || "",
-          updatedAt: new Date()
+          status: "REJECTED",
+          reviewer: { connect: { id: userId } },
+          notes: reviewNotes || ""
         },
         include: {
-          items: {
-            include: {
-              product: true
-            }
-          },
+          items: { include: { product: true } },
           user: true,
           reviewer: true
         }
       });
 
-      // Create audit history entry for status change
+      // Create audit history record
       await prisma.inventoryAuditHistory.create({
         data: {
           auditId,
           action: "STATUS_CHANGED",
           oldValue: "PENDING",
           newValue: "REJECTED",
-          userId: reviewerId,
-          notes: reviewNotes || "No reason provided"
+          userId,
+          createdAt: new Date()
         }
       });
 

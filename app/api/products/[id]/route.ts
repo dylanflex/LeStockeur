@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  if (!params?.id) {
+    return NextResponse.json(
+      { error: 'Product ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
     const product = await prisma.product.findUnique({
       where: { id: params.id },

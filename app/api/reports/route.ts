@@ -23,11 +23,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { reportType, startDate, endDate, productId } = await request.json();
+    const { reportType, startDate, endDate, productId, exportFormat } = await request.json();
+
+    if (!reportType) {
+      return NextResponse.json(
+        { success: false, error: "Report type is required" },
+        { status: 400 }
+      );
+    }
 
     let reportData;
     switch (reportType) {
-      case 'inventory_status':
+      case 'overview':
+      case 'inventory':
         reportData = await prisma.product.findMany({
           where: productId ? { id: productId } : {},
           select: {
@@ -42,7 +50,7 @@ export async function POST(request: NextRequest) {
         });
         break;
 
-      case 'movement_history':
+      case 'movements':
         reportData = await prisma.stockMovement.findMany({
           where: {
             date: {
@@ -61,60 +69,57 @@ export async function POST(request: NextRequest) {
         });
         break;
 
-      case 'audit_summary':
-        reportData = await prisma.inventoryAudit.findMany({
-          where: {
-            date: {
-              gte: startDate ? new Date(startDate) : undefined,
-              lte: endDate ? new Date(endDate) : undefined
-            }
-          },
-          include: {
-            items: {
-              include: {
-                product: true
-              }
-            },
-            user: true,
-            reviewer: true
-          },
-          orderBy: {
-            date: 'desc'
-          }
-        });
-        break;
-
-      case 'low_stock_alert':
+      case 'financial':
         reportData = await prisma.product.findMany({
-          where: {
-            currentStock: {
-              lte: prisma.product.fields.minimumStock
-            }
-          },
           select: {
             id: true,
             name: true,
-            code: true,
             currentStock: true,
-            minimumStock: true,
-            category: true,
-            location: true
+            unitPrice: true,
+            category: true
           }
         });
         break;
 
       default:
         return NextResponse.json(
-          { success: false, error: "Invalid report type" },
+          { success: false, error: `Invalid report type: ${reportType}` },
           { status: 400 }
         );
+    }
+
+    if (exportFormat) {
+      let fileContent = '';
+      const headers = new Headers();
+      
+      if (exportFormat === 'csv') {
+        headers.set('Content-Type', 'text/csv');
+        headers.set('Content-Disposition', `attachment; filename=${reportType}-report.csv`);
+        
+        // Convert report data to CSV
+        const keys = Object.keys(reportData[0] || {});
+        fileContent = keys.join(',') + '\n';
+        fileContent += reportData.map(item => 
+          keys.map(key => JSON.stringify(item[key])).join(',')
+        ).join('\n');
+        
+        return new NextResponse(fileContent, { headers });
+      }
+      
+      if (exportFormat === 'json') {
+        headers.set('Content-Type', 'application/json');
+        headers.set('Content-Disposition', `attachment; filename=${reportType}-report.json`);
+        fileContent = JSON.stringify(reportData, null, 2);
+        
+        return new NextResponse(fileContent, { headers });
+      }
     }
 
     return NextResponse.json({
       success: true,
       data: {
         type: reportType,
-        generatedAt: new Date(),
+        generatedAt: new Date().toISOString(),
         results: reportData
       }
     });
@@ -122,7 +127,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error generating report:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to generate report" },
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to generate report"
+      },
       { status: 500 }
     );
   }

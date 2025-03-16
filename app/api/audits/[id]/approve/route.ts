@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server"; // ✅ Correction ici
 
 export async function POST(request: Request, context: { params: { id: string } }) {
   try {
-    const { userId } = getAuth(request);
+    const { userId } = await auth(); // ✅ Correction ici
     if (!userId) {
       return NextResponse.json(
         { error: "Authentication failed - Please sign in with a valid account" },
@@ -13,7 +13,7 @@ export async function POST(request: Request, context: { params: { id: string } }
     }
 
     const { reviewNotes } = await request.json();
-    const auditId = context.params.id; // Correction ici
+    const auditId = context.params.id;
 
     // Vérification que le reviewer existe
     const reviewer = await prisma.user.findUnique({ where: { id: userId } });
@@ -22,6 +22,22 @@ export async function POST(request: Request, context: { params: { id: string } }
     }
 
     // Mise à jour de l'audit dans une transaction
+    // Verify audit exists and is in PENDING status
+    const existingAudit = await prisma.inventoryAudit.findUnique({
+      where: { id: auditId }
+    });
+
+    if (!existingAudit) {
+      return NextResponse.json({ error: "Audit not found" }, { status: 404 });
+    }
+
+    if (existingAudit.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "Only pending audits can be approved" },
+        { status: 400 }
+      );
+    }
+
     const audit = await prisma.$transaction(async (prisma) => {
       // Mise à jour de l'audit
       const updatedAudit = await prisma.inventoryAudit.update({
@@ -29,7 +45,7 @@ export async function POST(request: Request, context: { params: { id: string } }
         data: {
           status: "APPROVED",
           reviewer: { connect: { id: userId } },
-          notes: reviewNotes || "",
+          notes: reviewNotes || ""
         },
         include: {
           items: { include: { product: true } },
@@ -45,7 +61,8 @@ export async function POST(request: Request, context: { params: { id: string } }
           action: "STATUS_CHANGED",
           oldValue: "PENDING",
           newValue: "APPROVED",
-          userId
+          userId,
+          createdAt: new Date()
         }
       });
 

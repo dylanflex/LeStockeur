@@ -136,7 +136,7 @@ export default function DashboardPage() {
                 </svg>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats?.stockValue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) || '0 €'}</div>
+                <div className="text-2xl font-bold">{stats?.stockValue ? stats.stockValue.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' }) : '0 F CFA'}</div>
                 <p className="text-xs text-muted-foreground">
                   Mise à jour en temps réel
                 </p>
