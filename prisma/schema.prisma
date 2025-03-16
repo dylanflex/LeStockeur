@@ -16,6 +16,7 @@ model Product {
   name              String
   description       String?
   category          String?
+  categoryId        String?
   unitPrice         Float               @default(0)
   minimumStock      Int                 @default(0)
   currentStock      Int                 @default(0)
@@ -24,6 +25,7 @@ model Product {
   updatedAt         DateTime            @updatedAt
   userId            String?
   user              User?               @relation(fields: [userId], references: [id])
+  productCategory   ProductCategory?    @relation(fields: [categoryId], references: [id])
   stockMovements    StockMovement[]
   auditItems        InventoryAuditItem[]
 }
@@ -90,4 +92,83 @@ model User {
   createdAudits     InventoryAudit[]    @relation("AuditCreator")
   reviewedAudits    InventoryAudit[]    @relation("AuditReviewer")
   auditHistory      InventoryAuditHistory[]
+  companySettings   CompanySettings[]
+  appPreferences    AppPreferences[]
+  notificationSettings NotificationSettings[]
+}
+
+model CompanySettings {
+  id                String    @id @default(cuid())
+  name              String
+  email             String
+  address           String
+  phone             String
+  logo              String?
+  currency          String    @default("EUR")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id])
+}
+
+model AppPreferences {
+  id                String    @id @default(cuid())
+  theme             String    @default("light")
+  language          String    @default("fr")
+  dateFormat        String    @default("DD/MM/YYYY")
+  timeFormat        String    @default("24h")
+  itemsPerPage      Int       @default(10)
+  currency          String    @default("EUR")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id])
+}
+
+model NotificationSettings {
+  id                String    @id @default(cuid())
+  lowStockAlert     Boolean   @default(true)
+  lowStockThreshold Int       @default(10)
+  emailNotifications Boolean   @default(true)
+  pushNotifications Boolean   @default(true)
+  stockAlerts       Boolean   @default(true)
+  criticalAlerts    Boolean   @default(true)
+  expiryAlerts      Boolean   @default(false)
+  emailEnabled      Boolean   @default(true)
+  appEnabled        Boolean   @default(true)
+  smsEnabled        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id])
+}
+
+model ProductCategory {
+  id                String    @id @default(cuid())
+  name              String    @unique
+  description       String?
+  website           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  products          Product[]
+}
+
+model BackupSettings {
+  id                String    @id @default(cuid())
+  autoBackupEnabled Boolean   @default(true)
+  frequency         String    @default("daily") // Values: daily, weekly, monthly
+  retentionPeriod   Int       @default(30)      // Number of days
+  lastBackupAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Backup {
+  id                String    @id @default(cuid())
+  filename          String
+  size              Int
+  type              String    // Values: manual, automatic
+  status            String    // Values: pending, completed, failed
+  createdAt         DateTime  @default(now())
+  completedAt       DateTime?
 }

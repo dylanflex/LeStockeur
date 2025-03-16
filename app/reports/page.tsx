@@ -1,4 +1,3 @@
-"use client";
 import { Shell } from "@/components/layout/shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
