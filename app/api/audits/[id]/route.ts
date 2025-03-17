@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
     const audit = await prisma.inventoryAudit.findUnique({
-      where: { id: params.id },
+      where: { id: context.params.id },
       include: {
         items: {
           include: {
