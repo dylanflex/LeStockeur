@@ -106,7 +106,7 @@ export default function NewAuditPage() {
     <Shell>
       <PageHeader
         heading="Nouvel Audit"
-        description="Créer un nouvel audit d'inventaire"
+        text="Créer un nouvel audit d'inventaire"
       />
       <form onSubmit={handleSubmit}>
         <Card>

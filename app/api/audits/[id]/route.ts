@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const audit = await prisma.inventoryAudit.findUnique({
       where: { id: params.id },
@@ -76,7 +76,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         where: { id: params.id },
         data: {
           status,
-          reviewNotes,
+          notes: reviewNotes,
           reviewerId: status === 'DRAFT' ? null : userId,
           updatedAt: new Date()
         },

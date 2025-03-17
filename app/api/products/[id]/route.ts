@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!params?.id) {
+  if (!id) {
     return NextResponse.json(
       { error: 'Product ID is required' },
       { status: 400 }
@@ -12,7 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   try {
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         stockMovements: {
           orderBy: {
@@ -54,7 +54,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
     
     if (!existingProduct) {
@@ -79,7 +79,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
     
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         code: data.code,
         name: data.name,
@@ -106,7 +106,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     // Check if product exists
     const product = await prisma.product.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
     
     if (!product) {
@@ -117,7 +117,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
     
     await prisma.product.delete({
-      where: { id: params.id }
+      where: { id }
     });
     
     return NextResponse.json({ success: true });

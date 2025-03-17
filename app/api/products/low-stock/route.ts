@@ -3,30 +3,7 @@ import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const lowStockProducts = await prisma.product.findMany({
-      where: {
-        OR: [
-          // Produits avec stock nul ou négatif
-          {
-            currentStock: {
-              lte: 0
-            }
-          },
-          // Produits où le stock actuel est inférieur au stock minimum
-          {
-            AND: [
-              { minimumStock: { gt: 0 } },
-              {
-                currentStock: {
-                  lt: {
-                    ref: "minimumStock"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      },
+    const products = await prisma.product.findMany({
       select: {
         id: true,
         name: true,
@@ -34,35 +11,34 @@ export async function GET() {
         minimumStock: true,
         createdAt: true,
         updatedAt: true,
-        category: {
+        productCategory: {  // Correct : On récupère la relation avec ProductCategory
           select: {
             name: true
           }
         }
       },
-      orderBy: [
-        {
-          currentStock: "asc"
-        }
-      ]
+      orderBy: {
+        currentStock: "asc"
+      }
     });
 
-    const formattedProducts = lowStockProducts.map(product => ({
-      id: product.id,
-      nom: product.name,
-      stockActuel: product.currentStock,
-      stockMinimum: product.minimumStock,
-      type: product.category?.name || "Non catégorisé",
-      dateCreation: new Date(product.createdAt).toLocaleDateString("fr-FR"),
-      dateMiseAJour: new Date(product.updatedAt).toLocaleDateString("fr-FR"),
-      raison: product.currentStock <= 0 ? "Stock épuisé" : "Stock faible"
-    }));
+    // 🔥 Filtrer côté serveur pour comparer currentStock et minimumStock
+    const lowStockProducts = products
+      .filter((product) =>
+        product.currentStock <= 0 || // Rupture de stock
+        (product.minimumStock > 0 && product.currentStock < product.minimumStock) // Stock insuffisant
+      )
+      .map((product) => ({
+        ...product,
+        category: product.productCategory ? product.productCategory.name : null, // Correction ici
+      }));
 
-    return NextResponse.json({ success: true, data: formattedProducts });
+    return NextResponse.json({ success: true, data: lowStockProducts });
+
   } catch (error) {
-    console.error("Erreur lors de la récupération des produits en stock faible:", error);
+    console.error("Error fetching low stock products:", error);
     return NextResponse.json(
-      { error: "Échec de la récupération des produits en stock faible" },
+      { success: false, error: "Failed to fetch low stock products" },
       { status: 500 }
     );
   }

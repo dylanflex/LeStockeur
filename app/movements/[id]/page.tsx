@@ -39,7 +39,7 @@ export default function MovementDetailPage({ params }: { params: { id: string } 
   const [isDeleting, setIsDeleting] = useState(false);
   const [movement, setMovement] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const movementId = use(params).id;
+  const movementId = params.id;
   
   useEffect(() => {
     const fetchMovementData = async () => {

@@ -121,7 +121,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const id = params.id;
-  
+
   useEffect(() => {
     const fetchProductData = async () => {
       try {

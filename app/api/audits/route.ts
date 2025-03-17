@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
           notes: data.notes || "",
           userId: user.id,
           items: {
-            create: data.items.map((item) => ({
+            create: data.items.map((item: { theoreticalStock: number; actualStock: number; notes?: string; productId: string }) => ({
               theoreticalStock: item.theoreticalStock,
               actualStock: item.actualStock,
               difference: item.actualStock - item.theoreticalStock,

@@ -155,7 +155,7 @@ export default function DashboardPage() {
                 <div className="flex items-center pt-1">
                   <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
                   <span className="text-xs text-green-500">
-                    {stats?.monthlyInflow?.percentage > 0 
+                    {(stats?.monthlyInflow?.percentage ?? 0) > 0
                       ? `+${stats?.monthlyInflow?.percentage}%` 
                       : `${stats?.monthlyInflow?.percentage}%`}
                   </span>

@@ -67,7 +67,7 @@ export async function PUT(request: Request) {
       where: {
         id: existingPreferences.id,
       },
-      update: {
+      data: {
         language,
         dateFormat,
         currency,

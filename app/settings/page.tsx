@@ -175,7 +175,7 @@ export default function SettingsPage() {
         toast({
           title: "Succès",
           description: "Les paramètres de l'entreprise ont été enregistrés avec succès",
-          variant: "success"
+          variant: "default"
         });
       } else {
         throw new Error('Failed to save');
@@ -213,7 +213,7 @@ export default function SettingsPage() {
         toast({
           title: "Succès",
           description: "Les préférences ont été enregistrées avec succès",
-          variant: "success"
+          variant: "default"
         });
       } else {
         throw new Error('Failed to save');
@@ -251,7 +251,7 @@ export default function SettingsPage() {
         toast({
           title: "Succès",
           description: "Les paramètres de notification ont été enregistrés avec succès",
-          variant: "success"
+          variant: "default"
         });
       } else {
         throw new Error('Failed to save');

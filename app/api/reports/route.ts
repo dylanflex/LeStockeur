@@ -100,7 +100,11 @@ export async function POST(request: NextRequest) {
         const keys = Object.keys(reportData[0] || {});
         fileContent = keys.join(',') + '\n';
         fileContent += reportData.map(item => 
-          keys.map(key => JSON.stringify(item[key])).join(',')
+          keys.map(key => {
+            // Type assertion to handle dynamic property access
+            const value = (item as Record<string, unknown>)[key];
+            return JSON.stringify(value);
+          }).join(',')
         ).join('\n');
         
         return new NextResponse(fileContent, { headers });

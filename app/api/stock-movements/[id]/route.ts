@@ -5,7 +5,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   try {
     const movement = await prisma.stockMovement.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         product: {
           select: {
@@ -52,7 +52,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // Get the original movement
     const originalMovement = await prisma.stockMovement.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { product: true }
     });
 
@@ -71,7 +71,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const result = await prisma.$transaction(async (prisma) => {
       // Update the movement
       const updatedMovement = await prisma.stockMovement.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           type,
           quantity,
@@ -111,7 +111,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     // Get the movement first to check if it exists and get its details
     const movement = await prisma.stockMovement.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
     
     if (!movement) {
@@ -125,7 +125,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const result = await prisma.$transaction(async (prisma) => {
       // Delete the movement
       await prisma.stockMovement.delete({
-        where: { id: params.id }
+        where: { id }
       });
       
       // Revert the product's stock
